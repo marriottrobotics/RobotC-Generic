@@ -5,8 +5,6 @@
 #define LOWPASS(x, n) (((ABS((x))) >= (n) || (x) <= (-(n))) ? (true) : (false))
 #define SIGN(x) (((x) >= 0) ? (1) : (-1))
 
-#define CBUF_S 10
-
 //The structure that defines a pid loop.
 struct pid {
 	tMotor mport;
@@ -17,24 +15,34 @@ struct pid {
 	float igain;
 	long ilimit;
 
-	short corrcap;
+	long lastPos;
+	float dgain;
+
+	//short corrcap;
+	int lowpass;
 	bool enable;
 
 	long min, max;
 };
+
+short lowpassS(short input, short minimum);
+int lowpassI(int input, int minimum);
 
 //Initalizes basic variables for the pid struct provided.
 void pid_init(struct pid *p) {
 	nMotorEncoder[p->mport] = 0;
 	p->mtarget = 0;
 	p->pgain = 0.70;
-	p->corrcap = 30;
+	//p->corrcap = 30;
 	p->enable = true;
 	p->min = 0;
 	p->max = 0;
-	p->igain = 0.001;
+	p->igain = 0.01;
 	p->isum = 0;
 	p->ilimit = 1000;
+	p->lastPos = 0;
+	p->dgain = 0;
+	p->lowpass = 8;
 }
 
 //Checks if the pid motor is close enough to it's target to be within an acceptable range.
@@ -73,7 +81,13 @@ void pid_update(struct pid *p) {
 
 	corr += p->isum * p->igain;
 
+	float dAvg = p->lastPos - enc;
+	corr += dAvg * p->dgain;
+
+	p->lastPos = enc;
+
 	//writeDebugStreamLine("Powering motor at %d", corr);
+	corr = lowpassI(corr, p->lowpass);
 	motor[p->mport] = corr;
 	//writeDebugStreamLine("Motor had power at %d", corr);
 }
@@ -105,6 +119,14 @@ task pid_run_loops() {
 
 //A lowpass to handle a short input with negative values.
 short lowpassS(short input, short minimum){
+	if(input <= -minimum || input >= minimum){
+		return input;
+	}else{
+		return 0;
+	}
+}
+
+int lowpassI(int input, int minimum){
 	if(input <= -minimum || input >= minimum){
 		return input;
 	}else{
