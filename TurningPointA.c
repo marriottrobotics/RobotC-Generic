@@ -94,6 +94,9 @@ void pre_auton()
   pforks.min = -2007;
   pforks.max = 0;
 
+  pcatipult.pgain = 1.0;
+  pcatipult.dgain = 0.5;
+
   //Setup the api for moving things
   setupMovements(&plfdrive, &plbdrive, &prfdrive, &prbdrive, 392, 10.16, 36.35375);
 
@@ -132,8 +135,10 @@ task autonomous()
 /*  You must modify the code to add your own robot specific commands here.   */
 /*---------------------------------------------------------------------------*/
 
-#define CATIPULT_ARM 1803
-#define CATIPULT_FIRE 10
+//627.2 Ticks/Rotation at motor = 1881.6 Ticks/Rotation at loader.
+//These two numbers should add to 1881.6 (decimals don't work so 1882).
+#define CATIPULT_ARM 1800
+#define CATIPULT_FIRE 82
 #define CATIPULT_ARMED true
 #define CATIPULT_FIRED false
 bool catipultState = CATIPULT_FIRED;
