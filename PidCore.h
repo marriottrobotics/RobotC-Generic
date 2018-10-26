@@ -81,6 +81,7 @@ void pid_update(struct pid *p) {
 
 	corr += p->isum * p->igain;
 
+	//D component
 	float dAvg = p->lastPos - enc;
 	corr += dAvg * p->dgain;
 

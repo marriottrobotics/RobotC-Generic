@@ -20,13 +20,25 @@ void drive(int ticks, bool waitTarget);
 *   ticks - the number of ticks to move in a direction. Should be positive.
 *   waitTarget - If true, this method will return after the action is completed. Otherwise, it will return immediatly.
 */
-void driveForward(int ticksIn, bool waitTarget);
+void driveForwards(int ticksIn, bool waitTarget);
 /*Moves the robot a distance backwards based on the ticks imput.
 * Variable:
 *   ticks - the number of ticks to move in a direction. Should be positive.
 *   waitTarget - If true, this method will return after the action is completed. Otherwise, it will return immediatly.
 */
 void driveBackwards(int ticksIn, bool waitTarget);
+/*Moves the robot a distance inwards (towards center) based on the ticks imput.
+* Variable:
+*   ticks - the number of ticks to move in a direction. Should be positive.
+*   waitTarget - If true, this method will return after the action is completed. Otherwise, it will return immediatly.
+*/
+void driveIn(int ticksIn, bool waitTarget);
+/*Moves the robot a distance outwards (from center) based on the ticks imput.
+* Variable:
+*   ticks - the number of ticks to move in a direction. Should be positive.
+*   waitTarget - If true, this method will return after the action is completed. Otherwise, it will return immediatly.
+*/
+void driveOut(int ticksIn, bool waitTarget);
 /*Moves the robot the number of centimeters indicated using the values passed from setupMovements()
 * Variable:
 *   cm - the number of centimeters to move in a direction. Positive is forward, negative is backwards.
@@ -88,10 +100,10 @@ void defineRobot(float wheelDiameter, float robotDiameter, float ticksPerRot){
 
 //Positive is forwards, negative is backwards.
 void drive(int ticks, bool waitTarget){
-  driveForward(ticks, waitTarget);
+  driveForwards(ticks, waitTarget);
 }
 
-void driveForward(int ticksIn, bool waitTarget){
+void driveForwards(int ticksIn, bool waitTarget){
   leftDriveA->mtarget += ticksIn;
   leftDriveB->mtarget += ticksIn;
   rightDriveA->mtarget += ticksIn;
@@ -111,6 +123,22 @@ void driveBackwards(int ticksIn, bool waitTarget){
   if(waitTarget){
     waitForTarget(leftDriveA, rightDriveA);
   }
+}
+
+void driveIn(int ticksIn, bool waitTarget){
+	if(isStartBlue()){
+		driveForwards(ticksIn, waitTarget);
+	}else{
+		driveBackwards(ticksIn, waitTarget);
+	}
+}
+
+void driveOut(int ticksIn, bool waitTarget){
+	if(isStartBlue()){
+		driveBackwards(ticksIn, waitTarget);
+	}else{
+		driveForwards(ticksIn, waitTarget);
+	}
 }
 
 void driveCm(float cm, bool waitTarget){

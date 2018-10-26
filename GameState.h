@@ -27,6 +27,7 @@ bool isStartRed(){
   }
   return false;
 }
+
 bool isStartBlue(){
   if(!startRed){
     return true;

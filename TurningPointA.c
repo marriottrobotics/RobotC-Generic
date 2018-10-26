@@ -42,6 +42,21 @@
 #define LIFT_DOWN 0
 #define LIFT_UP -2601
 
+#define LOADER_UP 0
+#define LOADER_DOWN -174
+
+//627.2 Ticks/Rotation at motor = 1881.6 Ticks/Rotation at loader.
+//These two numbers should add to 1881.6 (decimals don't work so 1882).
+#define CATIPULT_ARM 1800
+#define CATIPULT_FIRE 82
+#define CATIPULT_ARMED true
+#define CATIPULT_FIRED false
+bool catipultState = CATIPULT_FIRED;
+bool buttonReleased = true;
+
+bool loaderUp = true;
+bool loaderButtonReleased = true;
+
 struct pid plift, pforks, pcatipult, pgrabber;
 struct pid plfdrive, plbdrive, prfdrive, prbdrive;
 
@@ -93,9 +108,16 @@ void pre_auton()
 
   pforks.min = -2007;
   pforks.max = 0;
+  pforks.pgain = 0.6;
 
   pcatipult.pgain = 1.0;
   pcatipult.dgain = 0.5;
+
+  pgrabber.max = 0;
+  pgrabber.min = -174;
+  pgrabber.pgain = 2.0;
+  pgrabber.igain = 0.05;
+  pgrabber.lowpass = 30;
 
   //Setup the api for moving things
   setupMovements(&plfdrive, &plbdrive, &prfdrive, &prbdrive, 392, 10.16, 36.35375);
@@ -134,16 +156,6 @@ task autonomous()
 /*                                                                           */
 /*  You must modify the code to add your own robot specific commands here.   */
 /*---------------------------------------------------------------------------*/
-
-//627.2 Ticks/Rotation at motor = 1881.6 Ticks/Rotation at loader.
-//These two numbers should add to 1881.6 (decimals don't work so 1882).
-#define CATIPULT_ARM 1800
-#define CATIPULT_FIRE 82
-#define CATIPULT_ARMED true
-#define CATIPULT_FIRED false
-bool catipultState = CATIPULT_FIRED;
-bool buttonReleased = true;
-
 task usercontrol()
 {
   // User control code here, inside the loop
@@ -199,6 +211,29 @@ task usercontrol()
   		buttonReleased = false;
   	}else if(vexRT[Btn8L] == 0){
   		buttonReleased = true;
+  	}
+
+  	if(vexRT[Btn7L] == 1 && loaderButtonReleased){
+  		if(loaderUp){
+  			pgrabber.mtarget = LOADER_DOWN;
+ 				loaderUp = false;
+  		}else{
+  			pgrabber.mtarget = LOADER_UP;
+  			loaderUp = true;
+  		}
+  		loaderButtonReleased = false;
+  	}else if(vexRT[Btn7L] == 0){
+  		loaderButtonReleased = true;
+  	}
+  	if(vexRT[Btn5U] == 1){
+  		pgrabber.mtarget += 5;
+  	}else if(vexRT[Btn5D] == 1){
+  		pgrabber.mtarget -= 5;
+  	}
+  	if(pgrabber.mtarget == LOADER_DOWN){
+  		loaderUp = false;
+  	}else if(pgrabber.mtarget == LOADER_UP){
+  		loaderUp = true;
   	}
 
     wait1Msec(20);
