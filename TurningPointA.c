@@ -75,7 +75,8 @@ void pre_auton()
   // Set bStopTasksBetweenModes to false if you want to keep user created tasks
   // running between Autonomous and Driver controlled modes. You will need to
   // manage all user created tasks if set to false.
-  bStopTasksBetweenModes = true;
+	// If this is enabled our pid task shuts down. We need this to false.
+  bStopTasksBetweenModes = false;
 
   plift.mport = lift;
   pforks.mport = forks;
