@@ -126,7 +126,7 @@ void driveBackwards(int ticksIn, bool waitTarget){
 }
 
 void driveIn(int ticksIn, bool waitTarget){
-	if(isStartRed()){
+	if(isStartBlue()){
 		driveForwards(ticksIn, waitTarget);
 	}else{
 		driveBackwards(ticksIn, waitTarget);
@@ -134,7 +134,7 @@ void driveIn(int ticksIn, bool waitTarget){
 }
 
 void driveOut(int ticksIn, bool waitTarget){
-	if(isStartRed()){
+	if(isStartBlue()){
 		driveBackwards(ticksIn, waitTarget);
 	}else{
 		driveForwards(ticksIn, waitTarget);
