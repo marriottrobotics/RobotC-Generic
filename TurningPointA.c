@@ -37,13 +37,6 @@
 #include "GameState.h"
 #include "Movement.h"
 
-#define FORKS_CLOSED 0
-#define FORKS_FLAT -1200
-#define FORKS_DROP -2007
-
-#define LIFT_DOWN 0
-#define LIFT_UP -2601
-
 #define LOADER_UP 0
 #define LOADER_DOWN -174
 
@@ -51,15 +44,17 @@
 //These two numbers should add to 1881.6 (decimals don't work so 1882).
 #define CATIPULT_ARM 1800
 #define CATIPULT_FIRE 82
+
 #define CATIPULT_ARMED true
 #define CATIPULT_FIRED false
+
 bool catipultState = CATIPULT_FIRED;
 bool buttonReleased = true;
 
 bool loaderUp = true;
 bool loaderButtonReleased = true;
 
-struct pid plift, pforks, pcatipult, pgrabber;
+struct pid pcatipult, pgrabber;
 struct pid plfdrive, plbdrive, prfdrive, prbdrive;
 
 void enableDrivePid();
@@ -103,19 +98,14 @@ void pre_auton()
 	// If this is enabled our pid task shuts down. We need this to false.
   bStopTasksBetweenModes = false;
 
-  //plift.mport = lift;
-  pforks.mport = forks;
   pcatipult.mport = catipult;
   pgrabber.mport = grabber;
-  plift.enable = false;
 
   plfdrive.mport = lfdrive;
   plbdrive.mport = lbdrive;
   prfdrive.mport = rfdrive;
   prbdrive.mport = rbdrive;
 
-  pid_arr[pid_count++] = &plift;
-  pid_arr[pid_count++] = &pforks;
   pid_arr[pid_count++] = &pcatipult;
   pid_arr[pid_count++] = &pgrabber;
 
@@ -127,18 +117,6 @@ void pre_auton()
   pid_init_all();
 
   //Set min and max after pid init
-  plift.min = -2601;
-  plift.max = 0;
-  plift.pgain = 1.3;
-  plift.igain = 0.05;
-  plift.lowpass = 32;
-  //SlaveMotor(slave, master);
-  //slaveMotor(liftSlave, plift.mport);
-
-  pforks.min = -2007;
-  pforks.max = 0;
-  pforks.pgain = 0.6;
-  pforks.enable = false;
 
   pcatipult.pgain = 1.0;
   pcatipult.dgain = 0.5;
@@ -186,13 +164,10 @@ task autonomous()
 	}
 	initGameState(alliance, end);
 
-	prbdrive.mtarget = 600;
-	wait1Msec(3000);
-
   if(isStartBottom()){
-  //	autonBottom();
+  	autonBottom();
 	}else{
-	//	autonTop();
+		autonTop();
 	}
 }
 
@@ -238,7 +213,6 @@ task usercontrol()
 
   while (true)
   {
-  	writeDebugStreamLine("Lift at %d target %d", nMotorEncoder[plift.mport], plift.mtarget);
   	//Perim Drive
   	short lpower = vexRT[Ch3];
   	lpower*=-1;
@@ -250,24 +224,6 @@ task usercontrol()
   	motor[lbdrive] = lpower;
   	motor[rfdrive] = rpower;
   	motor[rbdrive] = rpower;
-
-  	if(vexRT[Btn8U] == 1){
-  		pforks.mtarget = FORKS_CLOSED;
-  	}else if(vexRT[Btn8R] == 1){
-  		pforks.mtarget = FORKS_FLAT;
-  	}else if(vexRT[Btn8D] == 1){
-  		pforks.mtarget = FORKS_DROP;
-  	}
-
-  	if(vexRT[Btn6U] == 1){
-  		plift.mtarget-=10; //TODO Tune number
-  	}else if(vexRT[Btn6D] == 1){
-  		plift.mtarget+=10; //TODO Tune number
-  	}else if(vexRT[Btn7U] == 1){
-  		plift.mtarget = LIFT_UP;
-  	}else if(vexRT[Btn7D] == 1){
-  		plift.mtarget = LIFT_DOWN;
-  	}
 
   	if(vexRT[Btn8L] == 1 && buttonReleased){
   		if(catipultState == CATIPULT_FIRED){
