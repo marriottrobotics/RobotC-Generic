@@ -50,6 +50,8 @@
 #define CATIPULT_ARMED true
 #define CATIPULT_FIRED false
 
+#define TOWER_RATIO -0.40
+
 bool catipultState = CATIPULT_FIRED;
 bool buttonReleased = true;
 
@@ -271,8 +273,10 @@ task usercontrol()
 
   	if(vexRT[Btn6U] == 1){
   		ptower.mtarget += 10;
+  		pelbow.mtarget += TOWER_RATIO*10;
   	}else if(vexRT[Btn6D] == 1){
   		ptower.mtarget -= 10;
+  		pelbow.mtarget -= TOWER_RATIO*10;
   	}
 
   	if(vexRT[Btn8U] == 1){
@@ -280,7 +284,6 @@ task usercontrol()
   	}else if(vexRT[Btn8D] == 1){
   		pelbow.mtarget-=10;
   	}
-
 
     wait1Msec(20);
   }
