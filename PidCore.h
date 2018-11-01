@@ -27,6 +27,7 @@ struct pid {
 
 short lowpassS(short input, short minimum);
 int lowpassI(int input, int minimum);
+void updateTower();
 
 //Initalizes basic variables for the pid struct provided.
 void pid_init(struct pid *p) {
@@ -114,6 +115,7 @@ task pid_run_loops() {
 				pid_update(pid_arr[i]);
 			}
 		}
+		updateTower();
 		wait1Msec(10);
 	}
 };
