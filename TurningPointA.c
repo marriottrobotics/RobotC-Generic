@@ -39,8 +39,8 @@
 #include "GameState.h"
 #include "Movement.h"
 
-#define LOADER_UP 25
-#define LOADER_DOWN -174
+#define LOADER_UP 15
+#define LOADER_DOWN -164
 
 //627.2 Ticks/Rotation at motor = 1881.6 Ticks/Rotation at loader.
 //These two numbers should add to 1881.6 (decimals don't work so 1882).
@@ -139,7 +139,7 @@ void pre_auton()
 
   pid_init_all();
 
-  pcatipult.pgain = 1.0;
+  pcatipult.pgain = 2.0;
   pcatipult.dgain = 0.5;
 
   pgrabber.max = 25;
@@ -302,6 +302,9 @@ task usercontrol()
   	if(switchDir){
   		lpower *= -1;
   		rpower *= -1;
+  		short buffer = lpower;
+  		lpower = rpower;
+  		rpower = buffer;
   	}
 
   	if(!SlowMode){
