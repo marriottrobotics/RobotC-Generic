@@ -398,7 +398,7 @@ task usercontrol()
     wait1Msec(20);
   }
 }
-
+//Outdated.
 void updateTower(){
 	//Limit the pid loop
 	if (towermin != 0 || towermax != 0) {
