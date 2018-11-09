@@ -5,15 +5,17 @@
 #define LOWPASS(x, n) (((ABS((x))) >= (n) || (x) <= (-(n))) ? (true) : (false))
 #define SIGN(x) (((x) >= 0) ? (1) : (-1))
 
-#define ENC_I2C true
-#define ENC_OPEN false
-#define ENCODER_MODE ENC_I2C
+#define SENSOR_I2C true
+#define SENSOR_POT false
+#define SENSOR_QENC false
 
 //The structure that defines a pid loop.
 struct pid {
 	tMotor mport;
 	long mtarget;
-	long *sensor;
+
+	tSensors sensor;
+	bool sensorMode;
 
 	float pgain;
 
@@ -24,7 +26,6 @@ struct pid {
 	long lastPos;
 	float dgain;
 
-	//short corrcap;
 	int lowpass;
 	bool enable;
 
@@ -36,10 +37,10 @@ int lowpassI(int input, int minimum);
 
 //Initalizes basic variables for the pid struct provided.
 void pid_init(struct pid *p) {
-	if(ENCODER_MODE){
+	if(p->sensorMode){
 		nMotorEncoder[p->mport] = 0;
 	}else{
-		*p->sensor = 0;
+		SensorValue[p->sensor] = 0;
 	}
 	p->mtarget = 0;
 	p->pgain = 0.70;
@@ -58,10 +59,10 @@ void pid_init(struct pid *p) {
 //Checks if the pid motor is close enough to it's target to be within an acceptable range.
 bool pid_ontarget(struct pid *p)
 {
-	if(ENCODER_MODE){
+	if(p->sensorMode){
 		return ABS(p->mtarget - nMotorEncoder[p->mport]) < 64;
 	}else{
-		return ABS(p->mtarget - *p->sensor) < 64;
+		return ABS(p->mtarget - SensorValue[p->sensor]) < 64;
 	}
 }
 
@@ -73,11 +74,11 @@ void pid_update(struct pid *p) {
 	}
 
 	int enc;
-	if(ENCODER_MODE){
+	if(p->sensorMode){
 		//Calculate initial values
 		enc = nMotorEncoder[p->mport];
 	}else{
-		enc = *p->sensor;
+		enc = SensorValue[p->sensor];
 	}
 
 	//Calculate err using the modified enc value and the target.
@@ -168,10 +169,10 @@ void wait_ontarget(struct pid *p)
 	while (!pid_ontarget(p)) {
 		//writeDebugStreamLine("In loop with orig_pos %d and last_pos %d", orig_pos, last_pos);
 
-		if(ENCODER_MODE){
+		if(p->sensorMode){
 			last_pos = nMotorEncoder[p->mport];
 		}else{
-			last_pos = *p->sensor;
+			last_pos = SensorValue[p->sensor];
 		}
 		wait1Msec(25);
 
